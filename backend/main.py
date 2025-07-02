@@ -42,7 +42,7 @@ def callback(code: str):
     profile_encoded = urllib.parse.quote(json.dumps(user_profile))
 
     # Redirect to your frontend with the profile attached
-    return RedirectResponse(f"http://localhost:5173/?profile={profile_encoded}")
+    return RedirectResponse(f"https://qualist.onrender.com/?profile={profile_encoded}")
 
 
 # --- SPOTIFY ECLECTIC PLAYLIST ---
