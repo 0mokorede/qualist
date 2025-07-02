@@ -44,9 +44,6 @@ def callback(code: str):
     # Redirect to your frontend with the profile attached
     return RedirectResponse(f"http://localhost:5173/?profile={profile_encoded}")
 
-# Redirect to frontend with profile as query
-    profile_json = urllib.parse.quote(json.dumps(user_profile))
-    return RedirectResponse(f"https://localhost:5173/welcome?profile={profile_json}")
 
 # --- SPOTIFY ECLECTIC PLAYLIST ---
 @app.post("/create-eclectic")
