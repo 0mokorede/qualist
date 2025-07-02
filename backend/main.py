@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, JSONResponse
+import urllib.parse
 import spotipy, requests
 from spotipy.oauth2 import SpotifyOAuth
 from google_auth_oauthlib.flow import Flow
@@ -36,12 +37,36 @@ def callback(code: str):
     access_token = token_info["access_token"]
     sp = spotipy.Spotify(auth=access_token)
     user_profile = sp.current_user()
-    return JSONResponse(content=user_profile)
+
+    # Encode the profile as a URL-safe string
+    profile_encoded = urllib.parse.quote(json.dumps(user_profile))
+
+    # Redirect to your frontend with the profile attached
+    return RedirectResponse(f"http://localhost:5173/?profile={profile_encoded}")
+
+# Redirect to frontend with profile as query
+    profile_json = urllib.parse.quote(json.dumps(user_profile))
+    return RedirectResponse(f"https://localhost:5173/welcome?profile={profile_json}")
 
 # --- SPOTIFY ECLECTIC PLAYLIST ---
 @app.post("/create-eclectic")
-def create_eclectic(data: PlaylistRequest):
-    pass  # BPM filtering logic to be implemented
+async def create_eclectic(request: Request):
+    data = await request.json()
+    user_id = data.get("user_id")
+
+    token_info = sp_oauth.get_cached_token()
+    if not token_info:
+        return JSONResponse(status_code=401, content={"error": "Not authenticated"})
+
+    sp = spotipy.Spotify(auth=token_info["access_token"])
+
+    top_tracks = sp.current_user_top_tracks(limit=20)["items"]
+    track_ids = [track["id"] for track in top_tracks]
+
+    playlist = sp.user_playlist_create(user=user_id, name="Eclectic Mix by Qualist", public=True)
+    sp.playlist_add_items(playlist["id"], track_ids)
+
+    return {"playlist_url": playlist["external_urls"]["spotify"]}
 
 # --- YOUTUBE OAUTH ---
 @app.get("/youtube/login")
